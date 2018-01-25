@@ -59,9 +59,8 @@ func PrivateDecryptRSA(data []byte, privateKey string) ([]byte, error) {
 	if data == nil {
 		return nil, ErrIllegalParameter
 	}
-	privateKey := []byte(privateKey)
 
-	block, _ := pem.Decode(privateKey)
+	block, _ := pem.Decode([]byte(privateKey))
 	if block == nil {
 		return nil, ErrIllegalParameter
 	}

@@ -72,9 +72,8 @@ func PrivateEncryptRSA(data []byte, privateKey string) ([]byte, error) {
 	if data == nil {
 		return nil, ErrIllegalParameter
 	}
-	privateKey := []byte(privateKey)
 
-	block, _ := pem.Decode(privateKey)
+	block, _ := pem.Decode([]byte(privateKey))
 	if block == nil {
 		return nil, ErrIllegalParameter
 	}
@@ -111,9 +110,8 @@ func PublicEncryptRSA(data []byte, publicKey string) ([]byte, error) {
 	if data == nil {
 		return nil, ErrIllegalParameter
 	}
-	publicKey := []byte(publicKey)
 
-	block, _ := pem.Decode(publicKey)
+	block, _ := pem.Decode([]byte(publicKey))
 	if block == nil {
 		return nil, ErrIllegalParameter
 	}
