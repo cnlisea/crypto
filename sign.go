@@ -13,9 +13,8 @@ func SignRSA(raw []byte, algorithm crypto.Hash, privateKey string) []byte {
 	if raw == nil {
 		return nil
 	}
-	privateKey := []byte(privateKey)
 
-	block, _ := pem.Decode(privateKey)
+	block, _ := pem.Decode([]byte(privateKey))
 	if block == nil {
 		return nil
 	}
@@ -42,9 +41,8 @@ func VerifySignature(raw []byte, signature string, algorithm crypto.Hash, public
 	if raw == nil || signature == "" {
 		return false
 	}
-	publicKey := []byte(publicKey)
 
-	block, _ := pem.Decode(publicKey)
+	block, _ := pem.Decode([]byte(publicKey))
 	if block == nil {
 		return false
 	}

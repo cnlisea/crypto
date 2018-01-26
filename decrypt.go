@@ -1,12 +1,15 @@
-package utils
+package crypto
 
 import (
 	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"crypto/cipher"
 	"encoding/base64"
 	"encoding/pem"
+	"crypto/des"
+	"errors"
 )
 
 const (
@@ -99,4 +102,45 @@ func leftPad(input []byte, size int) (out []byte) {
 	out = make([]byte, size)
 	copy(out[len(out)-n:], input)
 	return
+}
+
+func DesECBDecrypt(data, key []byte)([]byte, error) {
+	block, err := des.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	bs := block.BlockSize()
+	if len(data)%bs != 0 {
+		return nil, errors.New("crypto/cipher: input not full blocks")
+	}
+	out := make([]byte, len(data))
+	dst := out
+	for len(data) > 0 {
+		block.Decrypt(dst, data[:bs])
+		data = data[bs:]
+		dst = dst[bs:]
+	}
+	out = PKCS5UnPadding(out)
+	return out, nil
+}
+
+func DesCBCDecrypt(crypted, key []byte) ([]byte, error) {
+	block, err := des.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	blockMode := cipher.NewCBCDecrypter(block, key)
+	//origData := make([]byte, len(crypted))
+	origData := crypted
+	blockMode.CryptBlocks(origData, crypted)
+	//origData = PKCS5UnPadding(origData)
+
+	origData = PKCS5UnPadding(origData)
+	return origData, nil
+}
+
+func PKCS5UnPadding(origData []byte) []byte {
+	length := len(origData)
+	unpadding := int(origData[length-1])
+	return origData[:(length - unpadding)]
 }

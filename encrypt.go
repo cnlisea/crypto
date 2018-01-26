@@ -1,4 +1,4 @@
-package utils
+package crypto
 
 import (
 	"crypto/md5"
@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/x509"
+	"crypto/cipher"
 	"encoding/base64"
 	"encoding/pem"
 	"errors"
@@ -15,6 +16,7 @@ import (
 	"bytes"
 
 	"golang.org/x/crypto/pkcs12"
+	"crypto/des"
 )
 
 var (
@@ -92,7 +94,7 @@ func PrivateEncryptRSA(data []byte, privateKey string) ([]byte, error) {
 		} else {
 			b = data[i:]
 		}
-		b, err := priKeyEncrypt(rand.Reader, prk.(*rsa.PrivateKey), b)
+		b, err := priKeyEncrypt(rand.Reader, privInterface.(*rsa.PrivateKey), b)
 		if nil != err {
 			return nil, err
 		}
@@ -168,4 +170,45 @@ func BuildQuery(params map[string]string) string {
 		array = append(array, url.QueryEscape(key)+"="+url.QueryEscape(value))
 	}
 	return string(strings.Join(array, "&"))
+}
+
+func DesECBEncrypt(data, key []byte)([]byte, error) {
+	block, err := des.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	bs := block.BlockSize()
+	data = PKCS5Padding(data, bs)
+	if len(data)%bs != 0 {
+		return nil, errors.New("Need a multiple of the blocksize")
+	}
+	out := make([]byte, len(data))
+	dst := out
+	for len(data) > 0 {
+		block.Encrypt(dst, data[:bs])
+		data = data[bs:]
+		dst = dst[bs:]
+	}
+	return out, nil
+}
+
+func DesCBCEncrypt(origData, key []byte) ([]byte, error) {
+	block, err := des.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	origData = PKCS5Padding(origData, block.BlockSize())
+	// origData = ZeroPadding(origData, block.BlockSize())
+	blockMode := cipher.NewCBCEncrypter(block, key)
+	crypted := make([]byte, len(origData))
+	// 根据CryptBlocks方法的说明，如下方式初始化crypted也可以
+	// crypted := origData
+	blockMode.CryptBlocks(crypted, origData)
+	return crypted, nil
+}
+
+func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
+	padding := blockSize - len(ciphertext)%blockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(ciphertext, padtext...)
 }
