@@ -2,13 +2,13 @@ package crypto
 
 import (
 	"bytes"
+	"crypto/cipher"
+	"crypto/des"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
-	"crypto/cipher"
 	"encoding/base64"
 	"encoding/pem"
-	"crypto/des"
 	"errors"
 )
 
@@ -104,7 +104,7 @@ func leftPad(input []byte, size int) (out []byte) {
 	return
 }
 
-func DesECBDecrypt(data, key []byte)([]byte, error) {
+func DesECBDecrypt(data, key []byte) ([]byte, error) {
 	block, err := des.NewCipher(key)
 	if err != nil {
 		return nil, err

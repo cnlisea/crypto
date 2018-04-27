@@ -1,12 +1,12 @@
 package crypto
 
 import (
+	"crypto/cipher"
 	"crypto/md5"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/x509"
-	"crypto/cipher"
 	"encoding/base64"
 	"encoding/pem"
 	"errors"
@@ -15,8 +15,8 @@ import (
 
 	"bytes"
 
-	"golang.org/x/crypto/pkcs12"
 	"crypto/des"
+	"golang.org/x/crypto/pkcs12"
 )
 
 var (
@@ -172,7 +172,7 @@ func BuildQuery(params map[string]string) string {
 	return string(strings.Join(array, "&"))
 }
 
-func DesECBEncrypt(data, key []byte)([]byte, error) {
+func DesECBEncrypt(data, key []byte) ([]byte, error) {
 	block, err := des.NewCipher(key)
 	if err != nil {
 		return nil, err
